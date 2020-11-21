@@ -1,3 +1,4 @@
+import logging
 from keepasshttp import keepasshttp
 
 
@@ -5,7 +6,7 @@ class KeePass:
 
     @staticmethod
     def get(url):
-        print("Retrieve credentials for '" + url + "'")
+        logging.info("Retrieve credentials for '" + url + "'")
         credentials = keepasshttp.get(url)
         if credentials is None:
             raise Exception(

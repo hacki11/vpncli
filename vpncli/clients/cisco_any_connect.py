@@ -18,9 +18,8 @@ class CiscoAnyConnect:
 
         try:
             stdout = proc.communicate(input=str(self.user + '\n' + self.password + '\n').encode(), timeout=2)[0]
-            print(stdout.decode())
+            logging.debug(stdout.decode())
             proc.wait()
-            print(proc.returncode)
         except TimeoutExpired:
             # we do not care
             pass

@@ -1,44 +1,44 @@
-import keepasshttp
 import configparser
 import argparse
+import logging
+import sys
 
-from connectivity import wait_for_connection, wait_until_unreachable
-from clients.fortinet import FortiClient
-
-from clients.ciscoAnyConnect import CiscoAnyConnect
-from credentials.keepass import KeePass
+from vpncli.connectivity import wait_for_connection, wait_until_unreachable
+from vpncli.clients.fortinet import FortiClient
+from vpncli.clients.cisco_any_connect import CiscoAnyConnect
+from vpncli.credentials.keepass import KeePass
 
 
 def connect(site):
     test_address = config.get(site, 'testAddress')
-    print("Connect to " + site)
+    logging.info("Connect to " + site)
     client = create_client(site)
     client.connect()
     if wait_for_connection(test_address) == 0:
-        print("Connection established.")
+        logging.info("Connection established.")
     else:
         raise Exception("Could not establish connection to " + site)
 
 
 def disconnect(site):
-    print("Disconnect from " + site)
+    logging.info("Disconnect from " + site)
     client = create_client(site)
     client.disconnect()
     if wait_until_unreachable(config.get(site, 'testAddress')) == 0:
-        print("Disconnected successfully")
+        logging.info("Disconnected successfully")
     else:
         raise Exception("Could not disconnect from " + site)
 
 
 def switch(site):
-    print("Switching to " + site)
+    logging.info("Switching to " + site)
     dis_sites = config.sections()
     dis_sites.remove(site)
     for site in dis_sites:
         disconnect(site)
 
     connect(site)
-    print("Switched successfully to " + site)
+    logging.info("Switched successfully to " + site)
 
 
 def create_client(site):
@@ -68,8 +68,10 @@ def create_cred_provider(type):
     else:
         raise Exception("Credential provider '" + type + "' not supported.")
 
+
 if __name__ == '__main__':
 
+    logging.basicConfig(format=logging.BASIC_FORMAT, stream=sys.stdout, level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Generic VPN client command line')
 
     mux = parser.add_mutually_exclusive_group()
@@ -90,6 +92,4 @@ if __name__ == '__main__':
         disconnect(args.disconnect)
     elif args.switch:
         switch(args.switch)
-
-
 
