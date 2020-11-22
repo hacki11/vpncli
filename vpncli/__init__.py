@@ -1,3 +1,10 @@
-from vpncli.clients.fortinet import FortiClient
-from vpncli.clients.cisco_any_connect import CiscoAnyConnect
-from vpncli.credentials.keepass import KeePass
+from . import cisco_any_connect
+from . import connectivity
+from . import fortinet
+from . import keepass
+__all__ = [
+    'cisco_any_connect',
+    'connectivity',
+    'fortinet',
+    'keepass'
+]

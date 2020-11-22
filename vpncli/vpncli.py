@@ -4,15 +4,15 @@ import logging
 import sys
 
 from vpncli.connectivity import wait_for_connection, wait_until_unreachable
-from vpncli.clients.fortinet import FortiClient
-from vpncli.clients.cisco_any_connect import CiscoAnyConnect
-from vpncli.credentials.keepass import KeePass
+from vpncli.fortinet import FortiClient
+from vpncli.cisco_any_connect import CiscoAnyConnect
+from vpncli.keepass import KeePass
 
 
-def connect(site):
+def connect(site, config, cred_provider):
     test_address = config.get(site, 'testAddress')
     logging.info("Connect to " + site)
-    client = create_client(site)
+    client = create_client(site, config, cred_provider)
     client.connect()
     if wait_for_connection(test_address) == 0:
         logging.info("Connection established.")
@@ -20,7 +20,7 @@ def connect(site):
         raise Exception("Could not establish connection to " + site)
 
 
-def disconnect(site):
+def disconnect(site, config):
     logging.info("Disconnect from " + site)
     client = create_client(site)
     client.disconnect()
@@ -30,18 +30,18 @@ def disconnect(site):
         raise Exception("Could not disconnect from " + site)
 
 
-def switch(site):
+def switch(site, config, cred_provider):
     logging.info("Switching to " + site)
     dis_sites = config.sections()
     dis_sites.remove(site)
     for site in dis_sites:
         disconnect(site)
 
-    connect(site)
+    connect(site, config, cred_provider)
     logging.info("Switched successfully to " + site)
 
 
-def create_client(site):
+def create_client(site, config, cred_provider):
     client_type = config.get(site, 'type')
 
     if 'fortinet' == client_type:
@@ -69,7 +69,7 @@ def create_cred_provider(type):
         raise Exception("Credential provider '" + type + "' not supported.")
 
 
-if __name__ == '__main__':
+def main():
 
     logging.basicConfig(format=logging.BASIC_FORMAT, stream=sys.stdout, level=logging.DEBUG)
     parser = argparse.ArgumentParser(description='Generic VPN client command line')
@@ -87,9 +87,12 @@ if __name__ == '__main__':
     cred_provider = create_cred_provider('keepass')
 
     if args.connect:
-        connect(args.connect)
+        connect(args.connect, config, cred_provider)
     elif args.disconnect:
-        disconnect(args.disconnect)
+        disconnect(args.disconnect, config)
     elif args.switch:
-        switch(args.switch)
+        switch(args.switch, config, cred_provider)
 
+
+if __name__ == '__main__':
+    main()
